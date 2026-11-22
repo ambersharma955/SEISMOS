@@ -1,0 +1,30 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> select this repo.
+# After the first deploy, edit the two URLs below if your service names differ.
+services:
+  # ---- API (FastAPI, Docker) ----
+  - type: web
+    name: seismos-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: CORS_ORIGINS
+        value: https://seismos.onrender.com        # your frontend URL, no trailing slash
+
+  # ---- Frontend (React/Vite static site) ----
+  - type: web
+    name: seismos
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_BASE_URL
+        value: https://seismos-api.onrender.com    # your API URL, no trailing slash
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
